@@ -21,8 +21,9 @@ if st.button("ارسال"):
                     max_tokens=512,
                     temperature=0.7
                 )
-                st.success("✅ پاسخ دریافت شد:")
+                # نمایش مستقیم پاسخ
                 st.write(response['output'])
+
             except Exception as e:
                 st.error(f"❌ خطایی رخ داد: {e}")
     else:
