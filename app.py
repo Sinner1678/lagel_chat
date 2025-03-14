@@ -25,6 +25,7 @@ if st.button("ارسال"):
                 st.write(response['output'])
 
             except Exception as e:
-                st.error(f"❌ خطایی رخ داد: {e}")
+                st.error("❌ مشکلی در دریافت پاسخ وجود دارد.")
+                st.exception(e)  # نمایش جزئیات خطا
     else:
         st.warning("لطفاً یک ورودی وارد کنید.")
