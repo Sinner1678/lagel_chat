@@ -5,7 +5,7 @@ from together import Together
 client = Together(api_key=st.secrets["TOGETHER_API_KEY"])
 
 # تنظیم عنوان اپلیکیشن
-st.title("Chat with LLaMA 3.3 - Together AI")
+st.title("Chat with Jamal_law")
 
 # دریافت ورودی از کاربر
 user_input = st.text_area("سؤال خود را وارد کنید:")
