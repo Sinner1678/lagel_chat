@@ -5,7 +5,7 @@ import together
 together.api_key = st.secrets["TOGETHER_API_KEY"]
 
 # تنظیم عنوان اپلیکیشن
-st.title("Chat with Jamal_law")
+st.title("Chat with LLaMA 3.3 - Together AI")
 
 # دریافت ورودی از کاربر
 user_input = st.text_area("سؤال خود را وارد کنید:")
@@ -21,8 +21,15 @@ if st.button("ارسال"):
                     max_tokens=512,
                     temperature=0.7
                 )
-                # نمایش مستقیم پاسخ
-                st.write(response['output'])
+                # نمایش جزئیات کامل پاسخ برای اشکال‌یابی
+                st.json(response)
+
+                # بررسی صحت خروجی
+                if 'output' in response:
+                    st.write(response['output'])
+                else:
+                    st.error("❌ مشکلی در دریافت پاسخ وجود دارد. ساختار پاسخ:")
+                    st.json(response)
 
             except Exception as e:
                 st.error(f"❌ خطایی رخ داد: {e}")
