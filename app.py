@@ -21,8 +21,12 @@ if st.button("ارسال"):
                     max_tokens=256,  # کاهش تعداد توکن‌ها
                     temperature=0.7
                 )
-                # نمایش پاسخ مدل
-                st.write(response['output'])
+                # چاپ کل پاسخ دریافتی از API برای بررسی ساختار آن
+                st.write(response)
+
+                # بررسی ساختار پاسخ و دسترسی به داده‌های صحیح
+                if 'choices' in response and len(response['choices']) > 0:
+                    st.write(response['choices'][0]['text'])  # دسترسی به متن پاسخ
 
             except Exception as e:
                 st.error("❌ مشکلی در دریافت پاسخ وجود دارد.")
