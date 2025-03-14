@@ -18,18 +18,11 @@ if st.button("ارسال"):
                 response = together.Complete.create(
                     model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
                     prompt=user_input,
-                    max_tokens=512,
+                    max_tokens=256,  # کاهش تعداد توکن‌ها
                     temperature=0.7
                 )
-                # نمایش جزئیات کامل پاسخ برای اشکال‌یابی
-                st.json(response)
-
-                # بررسی صحت خروجی
-                if 'output' in response:
-                    st.write(response['output'])
-                else:
-                    st.error("❌ مشکلی در دریافت پاسخ وجود دارد. ساختار پاسخ:")
-                    st.json(response)
+                # نمایش پاسخ مدل
+                st.write(response['output'])
 
             except Exception as e:
                 st.error(f"❌ خطایی رخ داد: {e}")
