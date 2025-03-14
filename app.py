@@ -2,7 +2,7 @@ import streamlit as st
 from huggingface_hub import InferenceClient
 import os
 
-st.title("چت با DeepSeek-R1")
+st.title("چت با Jamal_law")
 st.write("پیام خود را وارد کنید و پاسخ را به صورت زنده ببینید!")
 
 # گرفتن API Key از متغیر محیطی
