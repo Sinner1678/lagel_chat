@@ -28,10 +28,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # تنظیم عنوان اپلیکیشن
-st.title("چت و خلاصه‌ساز با Jamal_law")
+st.title("چت، خلاصه‌ساز و صدور رای قضایی با Jamal_law")
 
-# تب‌بندی برای چت و خلاصه‌ساز
-tab1, tab2 = st.tabs(["چت مکالمه‌ای", "خلاصه‌ساز متن"])
+# تب‌بندی برای چت، خلاصه‌ساز و رای قضایی
+tab1, tab2, tab3 = st.tabs(["چت مکالمه‌ای", "خلاصه‌ساز متن", "صدور رای قضایی"])
 
 # بخش چت مکالمه‌ای
 with tab1:
@@ -82,7 +82,7 @@ with tab1:
 # بخش خلاصه‌ساز
 with tab2:
     st.subheader("خلاصه‌سازی متن طولانی")
-    long_text = st.text_area("متن طولانی خود را اینجا وارد کنید:", height=200)
+    long_text = st.text_area("متن طولانی خود را اینجا وارد کنید:", height=200, key="summary_input")
     
     if st.button("خلاصه کن", key="summarize_button"):
         if long_text:
@@ -106,3 +106,36 @@ with tab2:
                     st.exception(e)
         else:
             st.warning("لطفاً متنی وارد کنید.")
+
+# بخش صدور رای قضایی
+with tab3:
+    st.subheader("صدور رای قضایی")
+    legal_incident = st.text_area("رخداد حقوقی را توضیح دهید:", height=150, key="legal_incident")
+    legal_references = st.text_area("مواد قانونی مرتبط (اختیاری):", height=100, key="legal_references")
+    
+    if st.button("صدور رای", key="judgment_button"):
+        if legal_incident:
+            with st.spinner("در حال صدور رای..."):
+                try:
+                    if legal_references:
+                        judgment_prompt = f"بر اساس رخداد حقوقی زیر و مواد قانونی ذکرشده، یک رای قضایی بنویس که شامل یافته‌های事実، استناد به قوانین، و تصمیم نهایی باشد:\n\nرخداد: {legal_incident}\nمواد قانونی: {legal_references}"
+                    else:
+                        judgment_prompt = f"بر اساس رخداد حقوقی زیر، یک رای قضایی بنویس که شامل یافته‌های事実، استناد به قوانین مرتبط (خودت حدس بزن)، و تصمیم نهایی باشد:\n\nرخداد: {legal_incident}"
+
+                    response = client.chat.completions.create(
+                        model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
+                        messages=[{"role": "user", "content": judgment_prompt}],
+                        max_tokens=1000,
+                        temperature=0.5,
+                        top_p=0.9,
+                        stream=False
+                    )
+
+                    judgment = response.choices[0].message.content
+                    st.write("### رای قضایی:")
+                    st.write(judgment)
+                except Exception as e:
+                    st.error("❌ مشکلی در صدور رای وجود دارد.")
+                    st.exception(e)
+        else:
+            st.warning("لطفاً رخداد حقوقی را وارد کنید.")
