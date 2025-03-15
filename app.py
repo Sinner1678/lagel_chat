@@ -28,10 +28,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # تنظیم عنوان اپلیکیشن
-st.title("چت، خلاصه‌ساز و صدور رای قضایی با Jamal_law")
+st.title("چت، خلاصه‌ساز حقوقی و صدور رای قضایی با Jamal_law")
 
-# تب‌بندی برای چت، خلاصه‌ساز و رای قضایی
-tab1, tab2, tab3 = st.tabs(["چت مکالمه‌ای", "خلاصه‌ساز متن", "صدور رای قضایی"])
+# تب‌بندی
+tab1, tab2, tab3 = st.tabs(["چت مکالمه‌ای", "خلاصه‌ساز متون حقوقی", "صدور رای قضایی"])
 
 # بخش چت مکالمه‌ای
 with tab1:
@@ -60,17 +60,14 @@ with tab1:
                         stop=["<|eot_id|>", "<|eom_id|>"],
                         stream=True
                     )
-
                     output_placeholder = st.empty()
                     full_response = ""
-
                     for token in response:
                         if hasattr(token, 'choices') and token.choices:
                             delta_content = token.choices[0].delta.content
                             if delta_content:
                                 full_response += delta_content
                                 output_placeholder.write(full_response)
-
                     st.session_state.messages.append({"role": "assistant", "content": full_response})
                     st.rerun()
                 except Exception as e:
@@ -79,30 +76,31 @@ with tab1:
         else:
             st.warning("لطفاً یک ورودی وارد کنید.")
 
-# بخش خلاصه‌ساز
+# بخش خلاصه‌ساز متون حقوقی
 with tab2:
-    st.subheader("خلاصه‌سازی متن طولانی")
-    long_text = st.text_area("متن طولانی خود را اینجا وارد کنید:", height=200, key="summary_input")
+    st.subheader("خلاصه‌ساز متون حقوقی")
+    legal_text = st.text_area("متن حقوقی خود را اینجا وارد کنید:", height=200, key="legal_text_input")
     
-    if st.button("خلاصه کن", key="summarize_button"):
-        if long_text:
-            with st.spinner("در حال خلاصه‌سازی..."):
+    if st.button("استخراج نکات حقوقی", key="legal_summarize_button"):
+        if legal_text:
+            with st.spinner("در حال استخراج نکات حقوقی..."):
                 try:
-                    summary_prompt = f"لطفاً متن زیر را خلاصه کن و نکات کلیدی آن را استخراج کن:\n\n{long_text}"
+                    legal_summary_prompt = f"""
+                    متن حقوقی زیر را تحلیل کن و فقط نکات دقیق حقوقی (مانند مواد قانونی مرتبط، مسئولیت‌های قانونی، تخلفات یا حقوق طرفین) را به صورت فهرست‌وار استخراج کن. جزئیات غیرضروری یا غیرحقوقی (مثل توضیحات عمومی یا احساسی) را حذف کن:\n\n{legal_text}
+                    """
                     response = client.chat.completions.create(
                         model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
-                        messages=[{"role": "user", "content": summary_prompt}],
+                        messages=[{"role": "user", "content": legal_summary_prompt}],
                         max_tokens=500,
                         temperature=0.5,
                         top_p=0.9,
                         stream=False
                     )
-
-                    summary = response.choices[0].message.content
-                    st.write("### خلاصه و نکات کلیدی:")
-                    st.write(summary)
+                    legal_summary = response.choices[0].message.content
+                    st.write("### نکات حقوقی کلیدی:")
+                    st.markdown(legal_summary)  # برای نمایش بهتر فرمت فهرست‌وار
                 except Exception as e:
-                    st.error("❌ مشکلی در خلاصه‌سازی وجود دارد.")
+                    st.error("❌ مشکلی در استخراج نکات حقوقی وجود دارد.")
                     st.exception(e)
         else:
             st.warning("لطفاً متنی وارد کنید.")
@@ -121,7 +119,6 @@ with tab3:
                         judgment_prompt = f"بر اساس رخداد حقوقی زیر و مواد قانونی ذکرشده، یک رای قضایی بنویس که شامل یافته‌های事実، استناد به قوانین، و تصمیم نهایی باشد:\n\nرخداد: {legal_incident}\nمواد قانونی: {legal_references}"
                     else:
                         judgment_prompt = f"بر اساس رخداد حقوقی زیر، یک رای قضایی بنویس که شامل یافته‌های事実، استناد به قوانین مرتبط (خودت حدس بزن)، و تصمیم نهایی باشد:\n\nرخداد: {legal_incident}"
-
                     response = client.chat.completions.create(
                         model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
                         messages=[{"role": "user", "content": judgment_prompt}],
@@ -130,7 +127,6 @@ with tab3:
                         top_p=0.9,
                         stream=False
                     )
-
                     judgment = response.choices[0].message.content
                     st.write("### رای قضایی:")
                     st.write(judgment)
