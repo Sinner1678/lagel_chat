@@ -1,10 +1,8 @@
 import streamlit as st
 from together import Together
 
-# تنظیم کلید API
 client = Together(api_key=st.secrets["TOGETHER_API_KEY"])
 
-# اعمال استایل RTL
 st.markdown("""
     <style>
     body {
@@ -27,13 +25,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# تنظیم عنوان اپلیکیشن
+
 st.title("چت، خلاصه‌ساز حقوقی، صدور و تحلیل آراء قضایی با Jamal_law")
 
-# تب‌بندی
+
 tab1, tab2, tab3, tab4 = st.tabs(["چت مکالمه‌ای", "خلاصه‌ساز متون حقوقی", "صدور رای قضایی", "تحلیل آراء قضایی"])
 
-# بخش چت مکالمه‌ای
+
 with tab1:
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -76,7 +74,7 @@ with tab1:
         else:
             st.warning("لطفاً یک ورودی وارد کنید.")
 
-# بخش خلاصه‌ساز متون حقوقی
+
 with tab2:
     st.subheader("خلاصه‌ساز متون حقوقی")
     legal_text = st.text_area("متن حقوقی خود را اینجا وارد کنید:", height=200, key="legal_text_input")
@@ -105,7 +103,6 @@ with tab2:
         else:
             st.warning("لطفاً متنی وارد کنید.")
 
-# بخش صدور رای قضایی
 with tab3:
     st.subheader("صدور رای قضایی")
     legal_incident = st.text_area("رخداد حقوقی را توضیح دهید:", height=150, key="legal_incident")
@@ -136,7 +133,6 @@ with tab3:
         else:
             st.warning("لطفاً رخداد حقوقی را وارد کنید.")
 
-# بخش تحلیل آراء قضایی
 with tab4:
     st.subheader("تحلیل آراء قضایی")
     judgment_text = st.text_area("رای قضایی یا متن حقوقی را وارد کنید:", height=200, key="judgment_text")
@@ -150,7 +146,6 @@ with tab4:
         "تحلیل اقتصادی حقوق"
     ], key="analysis_method")
 
-    # تعریف توضیحات برای هر روش
     method_descriptions = {
         "پوزیتیویسم حقوقی": "پوزیتیویسم حقوقی معتقد است که قانون همان چیزی است که در نص قانونی نوشته شده و باید بدون توجه به اخلاق یا عدالت خارج از قانون اجرا شود. تحلیل باید صرفاً بر اساس نص قانون باشد.",
         "حقوق طبیعی": "حقوق طبیعی بر این باور است که قوانین باید با اصول عدالت و اخلاق ذاتی هم‌راستا باشند. تحلیل باید بررسی کند که آیا رای با مفاهیم عدالت فراتر از نص قانون سازگار است یا خیر.",
