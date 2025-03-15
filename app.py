@@ -4,6 +4,25 @@ from together import Together
 # تنظیم کلید API
 client = Together(api_key=st.secrets["TOGETHER_API_KEY"])
 
+# اعمال استایل RTL
+st.markdown("""
+    <style>
+    body {
+        direction: rtl;
+        text-align: right;
+        font-family: 'Vazirmatn', sans-serif;
+    }
+    .stTextInput > div > div > input {
+        direction: rtl;
+        text-align: right;
+    }
+    .stChatMessage {
+        direction: rtl;
+        text-align: right;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # تنظیم عنوان اپلیکیشن
 st.title("چت مکالمه‌ای با Jamal_law")
 
@@ -17,7 +36,7 @@ for message in st.session_state.messages:
         st.write(message["content"])
 
 # دریافت ورودی از کاربر
-user_input = st.text_input("سؤال خود را وارد کنید:", key="user_input")
+user_input = st.text_input("سوال خود را وارد کنید:", key="user_input")
 
 # ارسال درخواست به مدل و نمایش پاسخ
 if st.button("ارسال"):
