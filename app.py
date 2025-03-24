@@ -48,7 +48,7 @@ with tab1:
             with st.spinner("در حال پردازش..."):
                 try:
                     response = client.chat.completions.create(
-                        model="deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
+                        model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
                         messages=st.session_state.messages,
                         max_tokens=None,
                         temperature=0.7,
@@ -87,7 +87,7 @@ with tab2:
                     متن حقوقی زیر را تحلیل کن و فقط نکات دقیق حقوقی (مانند مواد قانونی مرتبط، مسئولیت‌های قانونی، تخلفات یا حقوق طرفین) را به صورت فهرست‌وار استخراج کن. جزئیات غیرضروری یا غیرحقوقی (مثل توضیحات عمومی یا احساسی) را حذف کن:\n\n{legal_text}
                     """
                     response = client.chat.completions.create(
-                        model="deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
+                        model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
                         messages=[{"role": "user", "content": legal_summary_prompt}],
                         max_tokens=500,
                         temperature=0.5,
@@ -117,7 +117,7 @@ with tab3:
                     else:
                         judgment_prompt = f"بر اساس رخداد حقوقی زیر، یک رای قضایی بنویس که شامل یافته‌های事実، استناد به قوانین مرتبط (خودت حدس بزن)، و تصمیم نهایی باشد:\n\nرخداد: {legal_incident}"
                     response = client.chat.completions.create(
-                        model="deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
+                        model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
                         messages=[{"role": "user", "content": judgment_prompt}],
                         max_tokens=1000,
                         temperature=0.5,
@@ -166,7 +166,7 @@ with tab4:
                     حالا متن زیر را تحلیل کن و خروجی را به صورت ساختارمند (با سرفصل‌های 'روش‌شناسی' و 'تحلیل') ارائه کن:\n\n{judgment_text}
                     """
                     response = client.chat.completions.create(
-                        model="deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
+                        model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
                         messages=[{"role": "user", "content": analysis_prompt}],
                         max_tokens=1000,
                         temperature=0.6,
