@@ -32,7 +32,6 @@ st.title("🧠 چت + 🌐 جستجو در وب")
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# ورودی کاربر
 user_input = st.text_input("سوال خود را وارد کنید:")
 
 if st.button("ارسال"):
@@ -41,32 +40,36 @@ if st.button("ارسال"):
     else:
         st.session_state.messages.append({"role": "user", "content": user_input})
 
-        with st.spinner("ابتدا در حال جستجو در وب..."):
-            # جستجو در DuckDuckGo
-            url = f"https://api.duckduckgo.com/?q={user_input}&format=json"
+        with st.spinner("در حال جستجو در وب از Serper..."):
+            headers = {
+                "X-API-KEY": st.secrets["SERPER_API_KEY"],
+                "Content-Type": "application/json"
+            }
+            body = {
+                "q": user_input,
+                "gl": "ir",  # مکان جغرافیایی: ایران
+                "hl": "fa"   # زبان: فارسی
+            }
             try:
-                res = requests.get(url)
-                data = res.json()
+                res = requests.post("https://google.serper.dev/search", headers=headers, json=body)
+                results = res.json()
 
-                summaries = []
-                if "RelatedTopics" in data:
-                    for topic in data["RelatedTopics"]:
-                        if "Text" in topic:
-                            summaries.append(topic["Text"])
-                        elif "Topics" in topic:
-                            for subtopic in topic["Topics"]:
-                                if "Text" in subtopic:
-                                    summaries.append(subtopic["Text"])
+                search_context = ""
+                if "organic" in results:
+                    for result in results["organic"][:5]:
+                        title = result.get("title", "")
+                        snippet = result.get("snippet", "")
+                        link = result.get("link", "")
+                        search_context += f"• {title}\n{snippet}\nلینک: {link}\n\n"
 
-                # انتخاب نهایتاً 5 نتیجه خلاصه شده
-                search_context = "\n".join(summaries[:5]) if summaries else "نتیجه‌ای از جستجو پیدا نشد."
+                if not search_context:
+                    search_context = "نتیجه‌ای از جستجو پیدا نشد."
 
             except Exception as e:
-                st.error("خطا در جستجو از وب.")
+                st.error("خطا در جستجو از Serper.")
                 st.exception(e)
                 search_context = "جستجو در وب ناموفق بود."
 
-        # ساخت پیام برای مدل
         system_prompt = "شما یک دستیار حقوقی هستید که ابتدا نتایج جستجو در وب را بررسی کرده‌اید و سپس پاسخ می‌دهید."
         prompt_to_model = f"""### نتایج جستجو:
 {search_context}
@@ -79,7 +82,7 @@ if st.button("ارسال"):
         with st.spinner("در حال تولید پاسخ توسط مدل..."):
             try:
                 response = client.chat.completions.create(
-                    model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
+                    model="meta-llama/Llama-3-70B-Instruct",  # این مدل در دسترس هست
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": prompt_to_model},
