@@ -2,14 +2,9 @@ import streamlit as st
 import requests
 from together import Together
 
-# کلیدها از secrets
-TOGETHER_API_KEY = st.secrets["TOGETHER_API_KEY"]
-SERPER_API_KEY = st.secrets["SERPER_API_KEY"]
+client = Together(api_key=st.secrets["TOGETHER_API_KEY"])
 
-# کلاینت Together
-client = Together(api_key=TOGETHER_API_KEY)
-
-# استایل راست‌چین فارسی
+# تنظیمات استایل فارسی
 st.markdown("""
     <style>
     body {
@@ -32,53 +27,69 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("چت با Jamal_law + جستجو در وب")
+st.title("🧠 چت + 🌐 جستجو در وب")
 
-# چت‌بات
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# نمایش تاریخچه چت
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
-
 # ورودی کاربر
-user_input = st.text_input("سؤال خود را وارد کنید:", key="user_input")
+user_input = st.text_input("سوال خود را وارد کنید:")
 
-if st.button("ارسال", key="chat_button"):
-    if user_input:
+if st.button("ارسال"):
+    if not user_input.strip():
+        st.warning("لطفاً سوالی وارد کنید.")
+    else:
         st.session_state.messages.append({"role": "user", "content": user_input})
-        with st.spinner("در حال جستجو در وب..."):
-            # انجام سرچ با Serper.dev
-            def search_web(query):
-                url = "https://google.serper.dev/search"
-                headers = {"X-API-KEY": SERPER_API_KEY}
-                payload = {"q": query}
-                res = requests.post(url, json=payload, headers=headers)
-                results = res.json()
-                snippets = []
-                if "organic" in results:
-                    for r in results["organic"][:5]:
-                        if "snippet" in r:
-                            snippets.append(r["snippet"])
-                return "\n\n".join(snippets)
 
-            search_results = search_web(user_input)
-            context = f"""این اطلاعات از نتایج جستجوی وب استخراج شده‌اند:\n{search_results}\n\nحال به پرسش زیر پاسخ بده:\n{user_input}"""
-
-        with st.spinner("در حال تولید پاسخ..."):
+        with st.spinner("ابتدا در حال جستجو در وب..."):
+            # جستجو در DuckDuckGo
+            url = f"https://api.duckduckgo.com/?q={user_input}&format=json"
             try:
-                # ایجاد پاسخ با مدل
+                res = requests.get(url)
+                data = res.json()
+
+                summaries = []
+                if "RelatedTopics" in data:
+                    for topic in data["RelatedTopics"]:
+                        if "Text" in topic:
+                            summaries.append(topic["Text"])
+                        elif "Topics" in topic:
+                            for subtopic in topic["Topics"]:
+                                if "Text" in subtopic:
+                                    summaries.append(subtopic["Text"])
+
+                # انتخاب نهایتاً 5 نتیجه خلاصه شده
+                search_context = "\n".join(summaries[:5]) if summaries else "نتیجه‌ای از جستجو پیدا نشد."
+
+            except Exception as e:
+                st.error("خطا در جستجو از وب.")
+                st.exception(e)
+                search_context = "جستجو در وب ناموفق بود."
+
+        # ساخت پیام برای مدل
+        system_prompt = "شما یک دستیار حقوقی هستید که ابتدا نتایج جستجو در وب را بررسی کرده‌اید و سپس پاسخ می‌دهید."
+        prompt_to_model = f"""### نتایج جستجو:
+{search_context}
+
+### سوال:
+{user_input}
+
+### پاسخ دقیق و حقوقی بده:"""
+
+        with st.spinner("در حال تولید پاسخ توسط مدل..."):
+            try:
                 response = client.chat.completions.create(
-                    model="meta-llama/Llama-3-70B-Instruct",
+                    model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
                     messages=[
-                        {"role": "system", "content": "تو یک دستیار حقوقی هستی که با توجه به اطلاعات وب و تخصص حقوقی پاسخ می‌دهی."},
-                        {"role": "user", "content": context}
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt_to_model},
                     ],
+                    max_tokens=512,
                     temperature=0.7,
                     top_p=0.7,
-                    max_tokens=1024,
+                    top_k=50,
+                    repetition_penalty=1,
+                    stop=["<|eot_id|>", "<|eom_id|>"],
                     stream=True
                 )
                 output_placeholder = st.empty()
@@ -89,11 +100,14 @@ if st.button("ارسال", key="chat_button"):
                         if delta_content:
                             full_response += delta_content
                             output_placeholder.write(full_response)
-                # ذخیره چت
+
                 st.session_state.messages.append({"role": "assistant", "content": full_response})
-                st.rerun()
             except Exception as e:
-                st.error("❌ مشکلی در تولید پاسخ وجود دارد.")
+                st.error("مشکل در دریافت پاسخ از مدل.")
                 st.exception(e)
-    else:
-        st.warning("لطفاً یک ورودی وارد کنید.")
+
+# نمایش چت قبلی
+st.markdown("---")
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.write(message["content"])
